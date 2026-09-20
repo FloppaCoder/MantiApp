@@ -17,7 +17,6 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    // 1. Validar credenciales con Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -29,7 +28,6 @@ export default function LoginPage() {
       return;
     }
 
-    // 2. Verificar el rol del usuario en la tabla 'usuarios'
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select('rol')
@@ -38,21 +36,18 @@ export default function LoginPage() {
 
     if (userError || !userData) {
       await supabase.auth.signOut();
-      setError("Error al obtener los permisos del usuario. Contacte a soporte.");
+      setError("Error al obtener los permisos. Contacte a soporte.");
       setLoading(false);
       return;
     }
 
-    // 3. Control de Acceso Basado en Roles (RBAC)
     if (userData.rol === 'tecnico') {
-      // Si es técnico, cerramos la sesión y bloqueamos el acceso web
       await supabase.auth.signOut();
-      setError("Acceso denegado: Esta plataforma web es exclusiva para administradores. Por favor, utiliza la aplicación móvil operativa.");
+      setError("Acceso denegado: Usa la aplicación móvil operativa.");
       setLoading(false);
       return;
     }
 
-    // Si es administrador, permitimos el acceso al Dashboard
     if (userData.rol === 'administrador') {
       router.push('/');
     } else {
@@ -63,17 +58,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full p-8 bg-white rounded-xl shadow-lg border border-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-slate-900">
+      <div className="max-w-md w-full p-8 bg-slate-800 rounded-xl shadow-lg border border-slate-700">
         
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900">MantiApp</h1>
-          <p className="text-gray-500 mt-2">Panel Administrativo</p>
+          <h1 className="text-3xl font-bold text-blue-400">MantiApp</h1>
+          <p className="text-slate-400 mt-2 text-sm">Panel Administrativo</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-300 mb-1">
               Correo Electrónico
             </label>
             <input
@@ -81,13 +76,13 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all text-black"
+              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-white placeholder-slate-500"
               placeholder="admin@empresa.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-300 mb-1">
               Contraseña
             </label>
             <input
@@ -95,13 +90,13 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all text-black"
+              className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-white placeholder-slate-500"
               placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center">
+            <div className="bg-rose-500/20 text-rose-400 border border-rose-500/30 p-3 rounded-lg text-sm text-center font-medium">
               {error}
             </div>
           )}
@@ -109,17 +104,17 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Verificando...' : 'Ingresar al sistema'}
           </button>
-          <div className="mt-6 text-center text-sm text-gray-600">
+
+          <div className="mt-6 text-center text-sm text-slate-400">
             ¿No tienes una cuenta?{' '}
-            <Link href="/register" className="text-blue-600 hover:underline font-medium">
+            <Link href="/register" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
               Crea una aquí
             </Link>
           </div>
-
         </form>
 
       </div>
