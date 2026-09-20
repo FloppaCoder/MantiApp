@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 
 interface Asset {
@@ -15,10 +16,12 @@ interface Asset {
 export default function Home() {
   const [activos, setActivos] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
+  const [verificando, setVerificando] = useState(true);
   const [nuevoNombre, setNuevoNombre] = useState('');
   const [nuevoCodigo, setNuevoCodigo] = useState('');
+  const router = useRouter();
 
-  // 1. Obtener datos de Supabase al cargar
+  // 1. Obtener datos de Supabase
   const fetchActivos = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -34,11 +37,29 @@ export default function Home() {
     setLoading(false);
   };
 
+  // 2. Guardián: Verificar sesión antes de cargar la página
   useEffect(() => {
-    fetchActivos();
-  }, []);
+    const inicializarPagina = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
 
-  // 2. Agregar un activo para probar dinamismo
+      if (!session) {
+        router.replace('/login');
+      } else {
+        setVerificando(false);
+        fetchActivos();
+      }
+    };
+
+    inicializarPagina();
+  }, [router]);
+
+  // 3. Función para Cerrar Sesión
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.replace('/login');
+  };
+
+  // 4. Agregar un activo para probar dinamismo
   const handleCrearActivo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nuevoNombre || !nuevoCodigo) return;
@@ -56,18 +77,30 @@ export default function Home() {
     if (!error) {
       setNuevoNombre('');
       setNuevoCodigo('');
-      fetchActivos(); // Refrescar la lista
+      fetchActivos();
     }
   };
+
+  if (verificando) {
+    return <main className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Verificando seguridad...</main>;
+  }
 
   return (
     <main className="min-h-screen bg-slate-900 text-white p-8">
       <div className="max-w-4xl mx-auto space-y-8">
         
-        {/* Encabezado */}
-        <div>
-          <h1 className="text-3xl font-bold text-blue-400">MantiApp - Prueba Piloto</h1>
-          <p className="text-slate-400 text-sm">Conectado exitosamente a Supabase</p>
+        {/* Encabezado con botón de Logout */}
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-blue-400">MantiApp - Prueba Piloto</h1>
+            <p className="text-slate-400 text-sm">Conectado exitosamente a Supabase</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-medium text-sm rounded-lg transition-colors"
+          >
+            Cerrar Sesión
+          </button>
         </div>
 
         {/* Formulario simple para agregar */}
