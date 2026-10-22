@@ -48,36 +48,8 @@ export default function LoginScreen({ onNavigateToRegister, onLoginSuccess }: Lo
         return;
       }
 
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select("rol")
-        .eq("id", authData.user.id)
-        .single();
-
-      if (userError || !userData) {
-        await supabase.auth.signOut();
-        setError("Error al obtener los permisos. Contacte a soporte.");
-        setLoading(false);
-        return;
-      }
-
-      if (userData.rol === "administrador") {
-        await supabase.auth.signOut();
-        setError("Acceso denegado: El administrador debe usar la web.");
-        setLoading(false);
-        return;
-      }
-
-      if (userData.rol === "tecnico") {
-        if (onLoginSuccess) {
-          onLoginSuccess();
-        } else {
-          alert("¡Acceso concedido al panel técnico!");
-        }
-      } else {
-        await supabase.auth.signOut();
-        setError("Rol no reconocido.");
-      }
+      // App verifies the role for new and restored sessions before showing data.
+      onLoginSuccess?.();
     } catch {
       setError("Error de conexión al servidor.");
     } finally {

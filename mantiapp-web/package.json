@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/domain.test.mjs tests/components.test.cjs tests/scheduling.test.cjs"
+    "test": "node --test tests/domain.test.mjs tests/components.test.cjs tests/scheduling.test.cjs tests/mobile-api.test.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

@@ -1,7 +1,7 @@
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { View, Text, Image, StyleSheet } from "react-native";
 
-const brandIcon = require("../public/icon.png");
+const brandIcon = require("../assets/icon.png");
 
 export default function Brand() {
   return (

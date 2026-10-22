@@ -20,6 +20,16 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+      "expo-image-picker",
+      {
+        "cameraPermission": false,
+        "photosPermission": "Permite a MantiApp seleccionar fotos como evidencia de mantenimiento.",
+        "microphonePermission": false
+      }
+      ]
+    ]
   }
 }
