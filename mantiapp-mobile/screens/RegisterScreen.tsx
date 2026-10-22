@@ -19,6 +19,8 @@ interface RegisterProps {
 }
 
 export default function RegisterScreen({ onNavigateToLogin }: RegisterProps) {
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -28,7 +30,13 @@ export default function RegisterScreen({ onNavigateToLogin }: RegisterProps) {
   const handleRegister = async () => {
     setError(null);
 
-    if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
+    if (
+      !nombre.trim() ||
+      !apellido.trim() ||
+      !email.trim() ||
+      !password.trim() ||
+      !confirmPassword.trim()
+    ) {
       setError("Por favor completa todos los campos.");
       return;
     }
@@ -41,20 +49,42 @@ export default function RegisterScreen({ onNavigateToLogin }: RegisterProps) {
     setLoading(true);
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      // 1. Crear en auth.users
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
-          data: { rol: "tecnico" },
+          data: {
+            nombre: nombre.trim(),
+            apellido: apellido.trim(),
+            rol: "tecnico",
+          },
         },
       });
 
-      if (signUpError) {
-        setError(signUpError.message);
-      } else if (data.user) {
-        alert("Cuenta creada con éxito. Inicia sesión con tus credenciales.");
-        onNavigateToLogin();
+      if (signUpError || !authData.user) {
+        setError(signUpError?.message || "Error al crear la cuenta.");
+        setLoading(false);
+        return;
       }
+
+      // 2. Insertar en public.users
+      const { error: dbError } = await supabase.from("users").insert({
+        id: authData.user.id,
+        nombre: nombre.trim(),
+        apellido: apellido.trim(),
+        email: email.trim(),
+        rol: "tecnico",
+      });
+
+      if (dbError) {
+        console.log("Error insert users:", dbError);
+        setError("Error al registrar datos del usuario.");
+        setLoading(false);
+        return;
+      }
+      
+      onNavigateToLogin();
     } catch {
       setError("No se pudo completar el registro.");
     } finally {
@@ -79,6 +109,28 @@ export default function RegisterScreen({ onNavigateToLogin }: RegisterProps) {
             </View>
 
             <View style={styles.formContainer}>
+              <View style={styles.fieldGroup}>
+                <Text style={styles.formLabel}>Nombre</Text>
+                <TextInput
+                  value={nombre}
+                  onChangeText={setNombre}
+                  style={styles.input}
+                  placeholder="Juan"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <Text style={styles.formLabel}>Apellido</Text>
+                <TextInput
+                  value={apellido}
+                  onChangeText={setApellido}
+                  style={styles.input}
+                  placeholder="Pérez"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
+
               <View style={styles.fieldGroup}>
                 <Text style={styles.formLabel}>Correo Electrónico</Text>
                 <TextInput
@@ -168,7 +220,7 @@ const styles = StyleSheet.create({
     width: "90%",
     borderRadius: 10,
     padding: 32,
-    gap: 30,
+    gap: 24,
   },
   panelSubtitle: {
     color: "#cbd5e1",
@@ -178,14 +230,14 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     width: "100%",
-    gap: 16,
+    gap: 14,
   },
   fieldGroup: {
-    gap: 10,
+    gap: 6,
   },
   formLabel: {
     color: "#cbd5e1",
-    fontSize: 16,
+    fontSize: 14,
     textAlign: "left",
   },
   input: {
@@ -194,7 +246,7 @@ const styles = StyleSheet.create({
     borderColor: "#000000",
     borderRadius: 8,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     fontSize: 15,
     color: "#000000",
   },
@@ -216,7 +268,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 10,
+    marginTop: 6,
   },
   buttonText: {
     color: "#ffffff",
