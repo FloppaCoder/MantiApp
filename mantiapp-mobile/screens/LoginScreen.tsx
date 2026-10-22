@@ -19,7 +19,10 @@ interface LoginProps {
   onLoginSuccess?: () => void;
 }
 
-export default function LoginScreen({ onNavigateToRegister, onLoginSuccess }: LoginProps) {
+export default function LoginScreen({
+  onNavigateToRegister,
+  onLoginSuccess,
+}: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,6 +39,7 @@ export default function LoginScreen({ onNavigateToRegister, onLoginSuccess }: Lo
     setLoading(true);
 
     try {
+      // 1. Iniciar sesión con Supabase Auth
       const { data: authData, error: authError } =
         await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -48,8 +52,36 @@ export default function LoginScreen({ onNavigateToRegister, onLoginSuccess }: Lo
         return;
       }
 
-      // App verifies the role for new and restored sessions before showing data.
-      onLoginSuccess?.();
+      // 2. Buscar el rol en la tabla USERS con maybeSingle
+      const { data: userData } = await supabase
+        .from("users")
+        .select("rol")
+        .eq("id", authData.user.id)
+        .maybeSingle();
+
+      const userRole = userData?.rol || authData.user.user_metadata?.rol;
+
+      if (!userRole) {
+        await supabase.auth.signOut();
+        setError("Error al obtener los permisos. Contacte a soporte.");
+        setLoading(false);
+        return;
+      }
+
+      // 3. Validar que sea técnico (bloquear administrador en móvil)
+      if (userRole === "administrador") {
+        await supabase.auth.signOut();
+        setError("Acceso denegado: El administrador debe usar la web.");
+        setLoading(false);
+        return;
+      }
+
+      if (userRole === "tecnico") {
+        onLoginSuccess?.();
+      } else {
+        await supabase.auth.signOut();
+        setError("Rol no reconocido.");
+      }
     } catch {
       setError("Error de conexión al servidor.");
     } finally {
@@ -119,7 +151,9 @@ export default function LoginScreen({ onNavigateToRegister, onLoginSuccess }: Lo
               </TouchableOpacity>
 
               <View style={styles.linkContainer}>
-                <Text style={styles.linkDescription}>¿No tienes una cuenta? </Text>
+                <Text style={styles.linkDescription}>
+                  ¿No tienes una cuenta?{" "}
+                </Text>
                 <TouchableOpacity onPress={onNavigateToRegister}>
                   <Text style={styles.linkText}>Crea una aquí</Text>
                 </TouchableOpacity>
