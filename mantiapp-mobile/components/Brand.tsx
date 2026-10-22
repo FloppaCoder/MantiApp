@@ -1,7 +1,6 @@
-import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { View, Text, Image, StyleSheet } from "react-native";
 
-const brandIcon = require("../assets/icon.png");
+const brandIcon = require("../assets/logo.png");
 
 export default function Brand() {
   return (
@@ -11,7 +10,7 @@ export default function Brand() {
             style={styles.logo}
             accessibilityLabel="MantiApp Logo"
           />
-          <Text style={{ color: "#ffffff", fontSize: 30 }}>MantiApp</Text>
+          <Text style={styles.name}>Manti<Text style={styles.light}>App</Text></Text>
         </View>
   );
 }
@@ -27,5 +26,13 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     resizeMode: "contain",
+  },
+  name: {
+    color: "#ffffff",
+    fontSize: 30,
+    fontWeight: "700",
+  },
+  light: {
+    fontWeight: "400",
   },
 });
