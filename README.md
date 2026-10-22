@@ -6,12 +6,14 @@ Este repositorio contiene el **Panel Administrativo Web**, diseñado para usuari
 
 ---
 
-## Enlaces del Proyecto
+## Enlaces del Proyecto y Entregables
 
-* **Aplicación en producción:** [MantiApp en Vercel](https://manti-app.vercel.app/?utm_source=gemini)
-* **Repositorio oficial:** [GitHub - FloppaCoder/MantiApp](https://github.com/FloppaCoder/MantiApp?utm_source=gemini)
+Con base en los requerimientos de la evaluación, a continuación se presentan los recursos correspondientes a la Etapa 3:
 
----
+*   **Repositorio Oficial (Código Fuente):** [GitHub - FloppaCoder/MantiApp](https://github.com/FloppaCoder/MantiApp?utm_source=gemini)
+*   **Aplicación en Producción:** [MantiApp en Vercel](https://manti-app.vercel.app/?utm_source=gemini)
+*   **Video Demostrativo:** [Ver grabación en SharePoint](https://udbedu-my.sharepoint.com/:v:/g/personal/cg232706_alumno_udb_edu_sv/IQB-M4b6HTq1Sa5FPDPMx-MPAcdaPFZRTQ8JLXrIwUxb0xk?e=fQ9tww&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D)
+*   **Documento de Investigación:** [Leer PDF en SharePoint](https://udbedu-my.sharepoint.com/:b:/g/personal/cg232706_alumno_udb_edu_sv/IQCRMv8bch5NRadI-rkERXAlAQMFudU5FD_pECQeBtNeGGk?e=Z3Wveo)
 
 ## Arquitectura del Sistema
 
