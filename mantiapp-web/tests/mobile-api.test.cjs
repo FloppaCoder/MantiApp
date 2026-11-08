@@ -57,7 +57,6 @@ test('API móvil limita la consulta al técnico del token y valida su JWT por se
   const response = await b.load('app/api/movil/ordenes/route').GET(request());
   assert.equal(response.status, 200);
   assert.ok(b.calls.some(c => c[0] === 'eq' && c[1] === 'tecnico_id' && c[2] === 'tech-1'));
-  // Identity comes from the caller's JWT; data reads use the project client, like the admin API.
   const clients = b.calls.filter(c => c[0] === 'client').map(c => c[1]);
   assert.equal(clients[0].global.headers.Authorization, 'Bearer valid');
   assert.equal(clients.length, 2);

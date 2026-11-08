@@ -1,24 +1,4 @@
 #!/usr/bin/env node
-/**
- * Respaldo de solo lectura del esquema y los datos de Supabase (schema public).
- *
- * Uso:
- *   node scripts/backup-supabase.mjs
- *
- * Requiere que exista mantiapp-mobile/.env con:
- *   EXPO_PUBLIC_SUPABASE_URL
- *   EXPO_PUBLIC_SUPABASE_ANON_KEY
- *
- * Genera backups/<timestamp>_pre_tecnico/ con:
- *   - <tabla>.json        datos crudos
- *   - schema.sql          DDL reconstruido (PK + FKs conocidas)
- *   - data.sql            INSERTs listos para restaurar
- *   - manifest.json       conteos y metadatos
- *   - README.md           instrucciones
- *   - export-schema-authoritative.sql  consultas para DDL exacto desde el SQL Editor
- *
- * Nota: NO incluye auth.users (Supabase no lo expone por PostgREST).
- */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -49,7 +29,6 @@ const TABLES = [
   { name: 'work_orders', pk: 'id' },
 ];
 
-// Tipos confirmados en el ERD del proyecto.
 const COLUMN_TYPES = {
   users: { id: 'uuid', email: 'text', rol: 'text', nombre: 'text', apellido: 'text' },
   profiles: {
@@ -195,7 +174,6 @@ const dataSql = [
 ].join('\n');
 await writeFile(path.join(outDir, 'data.sql'), dataSql, 'utf8');
 
-// Rollback exacto de la migración de técnicos (usa los ids del snapshot).
 const originalProfileIds = data.profiles.map((p) => p.id);
 const rollbackSql = `-- Revierte la migración 20261108_sync_technician_profiles.sql
 -- Deja public.profiles exactamente con las filas de este respaldo.

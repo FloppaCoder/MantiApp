@@ -31,13 +31,11 @@ export default function TechnicianShell({ user }: { user: User }) {
     setSelected(null); setExtra(null); setFilter(nextFilter); setTab(next);
   };
 
-  // Refresca al cambiar de pestaña o al volver del detalle, para ver órdenes recién asignadas.
   useEffect(() => {
     if (firstRender.current) { firstRender.current = false; return; }
     if (!selected) refresh({ silent: true });
   }, [tab, extra, selected, refresh]);
 
-  // Refresca cuando la app vuelve a primer plano.
   useEffect(() => {
     const subscription = AppState.addEventListener('change', state => {
       if (state === 'active') refresh({ silent: true });
@@ -45,7 +43,6 @@ export default function TechnicianShell({ user }: { user: User }) {
     return () => subscription.remove();
   }, [refresh]);
 
-  // Sondeo ligero mientras la app está abierta: las asignaciones nuevas aparecen solas.
   useEffect(() => {
     const interval = setInterval(() => {
       if (AppState.currentState === 'active') refresh({ silent: true });

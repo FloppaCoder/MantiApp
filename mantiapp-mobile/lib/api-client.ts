@@ -41,11 +41,9 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
   catch { throw new ApiError('La API no devolvió una respuesta JSON válida.', response.status); }
 }
 
-// Same resource pattern as the web client; each screen owns its resource lifecycle.
 export function useResource<T>(path: string) {
   const [revision, setRevision] = useState(0);
   const [result, setResult] = useState<{ key: string; path: string; data?: T; error?: string }>({ key: '', path: '' });
-  // A silent reload keeps the current data on screen (no spinner, no error screen on a transient failure).
   const silent = useRef(false);
   const key = `${path}:${revision}`;
   useEffect(() => {
@@ -69,7 +67,6 @@ export function useResource<T>(path: string) {
   const update = useCallback((transform: (value: T) => T) => {
     setResult(value => value.key === key && value.data !== undefined ? { ...value, data: transform(value.data) } : value);
   }, [key]);
-  // Keep the previous data visible while revalidating to avoid flicker.
   const samePath = result.path === path;
   const current = result.key === key;
   return {
