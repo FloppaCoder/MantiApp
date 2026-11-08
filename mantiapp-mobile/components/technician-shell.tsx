@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, BackHandler, RefreshControl, ScrollView, StatusBar, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, AppState, BackHandler, RefreshControl, ScrollView, StatusBar, Text, View, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
@@ -22,13 +22,36 @@ export default function TechnicianShell({ user }: { user: User }) {
   const [extra, setExtra] = useState<TechnicianExtra | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [failure, setFailure] = useState('');
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance | null>(null);
   const orders = useResource<WorkOrder[]>(technicianPaths.orders);
   const profile = useResource<Technician>(technicianPaths.profile);
-  const refresh = () => { orders.reload(); profile.reload(); setFailure(''); };
+  const refresh = useCallback((options?: { silent?: boolean }) => { orders.reload(options); profile.reload(options); setFailure(''); }, [orders.reload, profile.reload]);
+  const firstRender = useRef(true);
   const navigate = (next: TechnicianTab, nextFilter: OrderFilter = 'Activas') => {
     setSelected(null); setExtra(null); setFilter(nextFilter); setTab(next);
   };
+
+  // Refresca al cambiar de pestaña o al volver del detalle, para ver órdenes recién asignadas.
+  useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return; }
+    if (!selected) refresh({ silent: true });
+  }, [tab, extra, selected, refresh]);
+
+  // Refresca cuando la app vuelve a primer plano.
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', state => {
+      if (state === 'active') refresh({ silent: true });
+    });
+    return () => subscription.remove();
+  }, [refresh]);
+
+  // Sondeo ligero mientras la app está abierta: las asignaciones nuevas aparecen solas.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (AppState.currentState === 'active') refresh({ silent: true });
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [refresh]);
 
   useEffect(() => { scroll.current?.scrollTo({ y: 0, animated: false }); }, [tab, extra]);
   useEffect(() => {
@@ -55,6 +78,7 @@ export default function TechnicianShell({ user }: { user: User }) {
     onUpdate={updated => { setSelected(updated); orders.update(items => items.map(item => item.id === updated.id ? updated : item)); }} />;
 
   const loading = orders.loading || profile.loading;
+  const refreshing = orders.refreshing || profile.refreshing;
   const error = orders.error || profile.error || failure;
   const lightHeader = tab !== 'Órdenes' && !extra && !loading && !error;
   let content: React.ReactNode;
@@ -67,8 +91,8 @@ export default function TechnicianShell({ user }: { user: User }) {
   else content = <ProfileScreen orders={orders.data} profile={profile.data} onHistory={() => navigate('Órdenes', 'Completadas')} onExtra={setExtra} onLogout={signOut} signingOut={signingOut} />;
 
   return <SafeAreaView style={styles.screen} edges={['top', 'left', 'right', 'bottom']}>
-    <StatusBar barStyle={lightHeader ? 'light-content' : 'dark-content'} backgroundColor={lightHeader ? colors.primary : colors.card} />
-    <ScrollView ref={scroll} contentContainerStyle={{ flexGrow: 1 }} refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor={colors.primary} />}>
+    <StatusBar barStyle={lightHeader ? 'light-content' : 'dark-content'} />
+    <ScrollView ref={scroll} contentContainerStyle={{ flexGrow: 1 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={colors.primary} />}>
       {content}
     </ScrollView>
     <BottomNav selected={extra ? null : tab} onNavigate={navigate} />

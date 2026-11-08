@@ -27,7 +27,8 @@
           "photosPermission": "Permite a MantiApp seleccionar fotos como evidencia de mantenimiento.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-status-bar"
     ]
   }
 }
