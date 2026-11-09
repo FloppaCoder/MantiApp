@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from './supabaseClient';
 
 export class ApiError extends Error {
@@ -41,23 +41,40 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
   catch { throw new ApiError('La API no devolvió una respuesta JSON válida.', response.status); }
 }
 
-// Same resource pattern as the web client; each screen owns its resource lifecycle.
 export function useResource<T>(path: string) {
   const [revision, setRevision] = useState(0);
-  const [result, setResult] = useState<{ key: string; data?: T; error?: string }>({ key: '' });
+  const [result, setResult] = useState<{ key: string; path: string; data?: T; error?: string }>({ key: '', path: '' });
+  const silent = useRef(false);
   const key = `${path}:${revision}`;
   useEffect(() => {
     const controller = new AbortController();
+    const isSilent = silent.current;
     request<T>(path, { signal: controller.signal }).then(data => {
-      if (!controller.signal.aborted) setResult({ key, data });
+      if (!controller.signal.aborted) setResult({ key, path, data });
     }).catch(failure => {
-      if (!controller.signal.aborted) setResult({ key, error: failure instanceof Error ? failure.message : 'Ocurrió un error inesperado.' });
+      if (controller.signal.aborted) return;
+      const message = failure instanceof Error ? failure.message : 'Ocurrió un error inesperado.';
+      setResult(previous => isSilent && previous.path === path && previous.data !== undefined
+        ? { ...previous, key }
+        : { key, path, error: message });
     });
     return () => controller.abort();
   }, [path, key]);
-  const reload = useCallback(() => setRevision(value => value + 1), []);
+  const reload = useCallback((options?: { silent?: boolean }) => {
+    silent.current = options?.silent === true;
+    setRevision(value => value + 1);
+  }, []);
   const update = useCallback((transform: (value: T) => T) => {
     setResult(value => value.key === key && value.data !== undefined ? { ...value, data: transform(value.data) } : value);
   }, [key]);
-  return { data: result.key === key ? result.data : undefined, error: result.key === key ? result.error : undefined, loading: result.key !== key, reload, update };
+  const samePath = result.path === path;
+  const current = result.key === key;
+  return {
+    data: samePath ? result.data : undefined,
+    error: current ? result.error : undefined,
+    loading: !samePath || (!current && result.data === undefined),
+    refreshing: samePath && !current && !silent.current,
+    reload,
+    update,
+  };
 }

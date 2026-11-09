@@ -10,16 +10,18 @@ export async function technicianContext(request: Request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) throw new MobileApiError('El servidor no está configurado.', 500);
-  // A client per request, using the caller's token. Never share auth between users.
-  const db = createClient(url, key, {
+  const authClient = createClient(url, key, {
     global: { headers: { Authorization: `Bearer ${token}` } },
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   });
-  const { data, error } = await db.auth.getUser(token);
+  const { data, error } = await authClient.auth.getUser(token);
   if (error || !data.user) throw new MobileApiError('La sesión no es válida.', 401);
-  const account = await db.from('users').select('*').eq('id', data.user.id).single();
+  const account = await authClient.from('users').select('*').eq('id', data.user.id).single();
   if (account.error) throw new MobileApiError('No se pudieron verificar los permisos.', 403);
   if (account.data?.rol !== 'tecnico') throw new MobileApiError('Acceso exclusivo para técnicos.', 403);
+  const db = createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
   return { db, user: data.user, account: account.data };
 }
 export function mobileFailure(failure: unknown) {

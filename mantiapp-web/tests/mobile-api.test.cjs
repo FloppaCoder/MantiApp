@@ -52,12 +52,15 @@ test('API móvil rechaza solicitudes sin token, tokens inválidos y administrado
     assert.ok(!b.calls.some(c => c[0] === 'from' && c[1] === 'work_orders'));
   }
 });
-test('API móvil limita la consulta al técnico del token y propaga su JWT a Supabase', async () => {
+test('API móvil limita la consulta al técnico del token y valida su JWT por separado', async () => {
   const b = backend();
   const response = await b.load('app/api/movil/ordenes/route').GET(request());
   assert.equal(response.status, 200);
   assert.ok(b.calls.some(c => c[0] === 'eq' && c[1] === 'tecnico_id' && c[2] === 'tech-1'));
-  assert.equal(b.calls.find(c => c[0] === 'client')[1].global.headers.Authorization, 'Bearer valid');
+  const clients = b.calls.filter(c => c[0] === 'client').map(c => c[1]);
+  assert.equal(clients[0].global.headers.Authorization, 'Bearer valid');
+  assert.equal(clients.length, 2);
+  assert.equal(clients[1].global, undefined);
 });
 test('El servidor exige el checklist original y no permite finalizar sin completar', () => {
   const validate = backend().load('lib/mobile-orders').validateOrderUpdate;
