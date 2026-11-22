@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
+import GoogleButton from '@/components/google-button';
+import AuthLogo from '@/components/auth-logo';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,32 +14,25 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  // Revisa el rol de un usuario que ya inició sesión (con contraseña o con Google):
+  // el administrador entra al panel y cualquier otro caso se rechaza.
+  const entrarSegunRol = async (userId: string) => {
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('rol')
+      .eq('id', userId)
+      .maybeSingle();
 
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (authError || !authData.user) {
-      setError("Credenciales incorrectas. Verifica tu correo y contraseña.");
+    if (userError) {
+      await supabase.auth.signOut();
+      setError("Error al obtener los permisos. Contacte a soporte.");
       setLoading(false);
       return;
     }
 
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('rol')
-      .eq('id', authData.user.id)
-      .single();
-
-    if (userError || !userData) {
-      await supabase.auth.signOut();
-      setError("Error al obtener los permisos. Contacte a soporte.");
-      setLoading(false);
+    // Cuenta nueva (por ejemplo, de Google) sin perfil: lo completa en otra pantalla
+    if (!userData) {
+      router.push('/completar-perfil');
       return;
     }
 
@@ -57,11 +52,42 @@ export default function LoginPage() {
     }
   };
 
+  // Al cargar la página: si ya hay sesión (por ejemplo, al volver de Google), se revisa el rol.
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        setLoading(true);
+        void entrarSegunRol(data.session.user.id);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (authError || !authData.user) {
+      setError("Credenciales incorrectas. Verifica tu correo y contraseña.");
+      setLoading(false);
+      return;
+    }
+
+    await entrarSegunRol(authData.user.id);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900">
       <div className="max-w-md w-full p-8 bg-slate-800 rounded-xl shadow-lg border border-slate-700">
         
         <div className="text-center mb-8">
+          <AuthLogo />
           <h1 className="text-3xl font-bold text-blue-400">MantiApp</h1>
           <p className="text-slate-400 mt-2 text-sm">Panel Administrativo</p>
         </div>
@@ -108,6 +134,8 @@ export default function LoginPage() {
           >
             {loading ? 'Verificando...' : 'Ingresar al sistema'}
           </button>
+
+          <GoogleButton disabled={loading} onError={setError} />
 
           <div className="mt-6 text-center text-sm text-slate-400">
             ¿No tienes una cuenta?{' '}

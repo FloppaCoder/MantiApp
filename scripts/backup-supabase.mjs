@@ -22,8 +22,7 @@ if (!baseUrl || !apiKey) {
 }
 
 const TABLES = [
-  { name: 'users', pk: 'id' },
-  { name: 'profiles', pk: 'id' },
+  { name: 'profiles', pk: 'id' }, // la tabla users se eliminó: profiles es la única tabla de usuarios
   { name: 'assets', pk: 'id' },
   { name: 'maintenance_plans', pk: 'id' },
   { name: 'work_orders', pk: 'id' },

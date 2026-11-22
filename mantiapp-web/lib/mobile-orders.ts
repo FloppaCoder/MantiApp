@@ -21,5 +21,10 @@ export function validateOrderUpdate(body: unknown, order: { estado: string; chec
   if (nuevo_estado === 'Completada' && (order.estado !== 'En progreso' || !checklist.every(item => item.completada))) {
     throw new MobileApiError('Completa todas las tareas antes de finalizar.', 400);
   }
-  return { estado: nuevo_estado as string, checklist: checklist.map(item => ({ tarea: item.tarea as string, completada: item.completada as boolean })) };
+  return {
+    estado: nuevo_estado as string,
+    checklist: checklist.map(item => ({ tarea: item.tarea as string, completada: item.completada as boolean })),
+    // Al completar la orden se guarda cuándo ocurrió
+    ...(nuevo_estado === 'Completada' ? { fecha_completada: new Date().toISOString() } : {}),
+  };
 }

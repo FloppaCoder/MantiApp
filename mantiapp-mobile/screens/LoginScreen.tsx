@@ -12,24 +12,39 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Brand from "../components/Brand";
+import GoogleButton from "../components/google-button";
 import { supabase } from "../lib/supabaseClient";
 
 interface LoginProps {
   onNavigateToRegister: () => void;
   onLoginSuccess?: () => void;
+  notice?: string; // mensaje guardado por App (se muestra al volver al formulario)
+  onNotice?: (message: string) => void; // permite guardar o limpiar ese mensaje en App
 }
 
 export default function LoginScreen({
   onNavigateToRegister,
   onLoginSuccess,
+  notice,
+  onNotice,
 }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(notice || null);
+
+  // Rechaza el acceso: guarda el mensaje en App (este formulario se desmonta al detectar
+  // la sesión), y cierra la sesión. Al volver al formulario, el mensaje se muestra.
+  const denyAccess = async (message: string) => {
+    onNotice?.(message);
+    setError(message);
+    await supabase.auth.signOut();
+    setLoading(false);
+  };
 
   const handleLogin = async () => {
     setError(null);
+    onNotice?.("");
 
     if (!email.trim() || !password.trim()) {
       setError("Por favor completa todos los campos.");
@@ -52,9 +67,9 @@ export default function LoginScreen({
         return;
       }
 
-      // 2. Buscar el rol en la tabla USERS con maybeSingle
+      // 2. Buscar el rol en la tabla PROFILES con maybeSingle
       const { data: userData } = await supabase
-        .from("users")
+        .from("profiles")
         .select("rol")
         .eq("id", authData.user.id)
         .maybeSingle();
@@ -62,25 +77,20 @@ export default function LoginScreen({
       const userRole = userData?.rol || authData.user.user_metadata?.rol;
 
       if (!userRole) {
-        await supabase.auth.signOut();
-        setError("Error al obtener los permisos. Contacte a soporte.");
-        setLoading(false);
+        await denyAccess("Error al obtener los permisos. Contacte a soporte.");
         return;
       }
 
       // 3. Validar que sea técnico (bloquear administrador en móvil)
       if (userRole === "administrador") {
-        await supabase.auth.signOut();
-        setError("Acceso denegado: El administrador debe usar la web.");
-        setLoading(false);
+        await denyAccess("Acceso denegado: El administrador debe usar la web.");
         return;
       }
 
       if (userRole === "tecnico") {
         onLoginSuccess?.();
       } else {
-        await supabase.auth.signOut();
-        setError("Rol no reconocido.");
+        await denyAccess("Rol no reconocido.");
       }
     } catch {
       setError("Error de conexión al servidor.");
@@ -149,6 +159,8 @@ export default function LoginScreen({
                   <Text style={styles.buttonText}>Ingresar al sistema</Text>
                 )}
               </TouchableOpacity>
+
+              <GoogleButton disabled={loading} onError={setError} />
 
               <View style={styles.linkContainer}>
                 <Text style={styles.linkDescription}>

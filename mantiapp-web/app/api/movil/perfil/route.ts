@@ -1,4 +1,5 @@
 import { mobileFailure, mobileJson, technicianContext } from '@/lib/mobile-api';
+import { nombreCompleto } from '@/lib/domain';
 
 export async function GET(request: Request) {
   try {
@@ -6,7 +7,7 @@ export async function GET(request: Request) {
     const { data: profile, error } = await db.from('profiles').select('*').eq('id', user.id).maybeSingle();
     if (error) throw error;
     return mobileJson({
-      nombre: profile?.nombre || [account.nombre, account.apellido].filter(Boolean).join(' ') || 'Técnico',
+      nombre: nombreCompleto(profile) || nombreCompleto(account) || 'Técnico',
       email: profile?.email || account.email || user.email || '',
       especialidad: profile?.especialidad || 'Técnico de mantenimiento',
       telefono: profile?.telefono || 'Sin registrar',
