@@ -22,7 +22,8 @@ export default function GoogleButton({
     try {
       const mensaje = await signInWithGoogle();
       if (mensaje) onError(mensaje);
-    } catch {
+    } catch (failure) {
+      console.log('[Google] excepción inesperada:', failure); // diagnóstico
       onError('No se pudo iniciar sesión con Google. Revisa tu conexión.');
     } finally {
       setBusy(false);

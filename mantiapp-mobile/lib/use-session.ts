@@ -26,7 +26,7 @@ export function useSession() {
     const initialRevision = revision;
     supabase.auth.getSession().then(({ data, error: failure }) => {
       if (!mounted || revision !== initialRevision) return;
-      if (failure) { setError('No se pudo recuperar la sesión.'); setReady(true); }
+      if (failure) { console.log('[Sesión] no se pudo recuperar:', failure.message); setError('No se pudo recuperar la sesión.'); setReady(true); }
       else accept(data.session);
     }).catch(() => { if (mounted) { setError('No se pudo recuperar la sesión.'); setReady(true); } });
     const appState = AppState.addEventListener('change', state => {
@@ -43,7 +43,7 @@ export function useSession() {
       try {
         await loadProfile();
         if (mounted) setAuthorized(true);
-      } catch (failure) { if (mounted) setError(failure instanceof Error ? failure.message : 'No se pudieron verificar tus permisos.'); }
+      } catch (failure) { console.log('[Sesión] no se pudieron verificar los permisos:', failure instanceof Error ? failure.message : failure); if (mounted) setError(failure instanceof Error ? failure.message : 'No se pudieron verificar tus permisos.'); }
       finally { if (mounted) setReady(true); }
     };
     void check();

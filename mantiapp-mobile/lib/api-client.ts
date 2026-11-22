@@ -26,9 +26,11 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
   try { response = await fetch(url, { ...options, headers }); }
   catch (failure) {
     if (failure instanceof Error && failure.name === 'AbortError') throw failure;
+    console.log('[API] sin conexión →', options.method ?? 'GET', url, '|', failure instanceof Error ? failure.message : failure);
     throw new ApiError('No pudimos conectar con la API. Verifica la dirección del servidor y tu conexión.', 0);
   }
   if (!response.ok) {
+    console.log('[API] respuesta con error →', options.method ?? 'GET', url, '|', response.status);
     const message = response.status === 401 ? 'Tu sesión ha caducado. Vuelve a iniciar sesión.'
       : response.status === 403 ? 'No tienes permiso para realizar esta acción.'
       : response.status === 404 ? 'No encontramos la orden solicitada.'
