@@ -2,6 +2,7 @@
   "expo": {
     "name": "mantiapp-mobile",
     "slug": "mantiapp-mobile",
+    "scheme": "mantiapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
@@ -28,7 +29,8 @@
           "microphonePermission": false
         }
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-web-browser"
     ]
   }
 }

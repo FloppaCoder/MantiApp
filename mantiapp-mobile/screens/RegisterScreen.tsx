@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Brand from "../components/Brand";
+import GoogleButton from "../components/google-button";
 import { supabase } from "../lib/supabaseClient";
 
 interface RegisterProps {
@@ -68,8 +69,8 @@ export default function RegisterScreen({ onNavigateToLogin }: RegisterProps) {
         return;
       }
 
-      // 2. Insertar en public.users
-      const { error: dbError } = await supabase.from("users").insert({
+      // 2. Insertar en public.profiles
+      const { error: dbError } = await supabase.from("profiles").insert({
         id: authData.user.id,
         nombre: nombre.trim(),
         apellido: apellido.trim(),
@@ -186,6 +187,8 @@ export default function RegisterScreen({ onNavigateToLogin }: RegisterProps) {
                   <Text style={styles.buttonText}>Crear cuenta</Text>
                 )}
               </TouchableOpacity>
+
+              <GoogleButton disabled={loading} onError={setError} texto="Registrarse con Google" />
 
               <View style={styles.linkContainer}>
                 <Text style={styles.linkDescription}>¿Ya tienes una cuenta? </Text>

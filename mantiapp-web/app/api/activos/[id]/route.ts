@@ -35,7 +35,16 @@ export async function DELETE(
   try {
     const { id } = await params;
     const { error } = await supabase.from('assets').delete().eq('id', id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      // 23503 / 23001: el activo tiene órdenes de trabajo asociadas (historial) y no se puede borrar
+      if (error.code === '23503' || error.code === '23001') {
+        return NextResponse.json(
+          { error: 'No se puede eliminar: el activo tiene órdenes de trabajo asociadas. Márcalo como "Fuera de Servicio".' },
+          { status: 409 }
+        );
+      }
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
     return NextResponse.json({ message: 'Activo eliminado correctamente' }, { status: 200 });
   } catch {
     return NextResponse.json({ error: 'Error al eliminar activo' }, { status: 500 });

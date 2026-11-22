@@ -30,7 +30,7 @@ export default function AdminShell({ children }: {
                     router.replace('/login');
                     return;
                 }
-                const profile = await supabase.from('users').select('rol').eq('id', data.user.id).single();
+                const profile = await supabase.from('profiles').select('rol').eq('id', data.user.id).single();
                 if (!active)
                     return;
                 if (profile.error) {

@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
+import GoogleButton from '@/components/google-button';
+import AuthLogo from '@/components/auth-logo';
 
 export default function RegisterPage() {
   const [nombre, setNombre] = useState('');
@@ -32,7 +34,7 @@ export default function RegisterPage() {
     }
 
     const { error: dbError } = await supabase
-      .from('users')
+      .from('profiles')
       .insert([
         {
           id: authData.user.id,
@@ -63,6 +65,7 @@ export default function RegisterPage() {
       <div className="max-w-md w-full p-8 bg-slate-800 rounded-xl shadow-lg border border-slate-700">
         
         <div className="text-center mb-8">
+          <AuthLogo />
           <h1 className="text-3xl font-bold text-blue-400">Crear Cuenta</h1>
           <p className="text-slate-400 mt-2 text-sm">Únete a MantiApp</p>
         </div>
@@ -143,6 +146,8 @@ export default function RegisterPage() {
           >
             {loading ? 'Creando cuenta...' : 'Registrarse'}
           </button>
+
+          <GoogleButton disabled={loading} onError={setError} texto="Registrarse con Google" />
 
           <div className="text-center text-sm text-slate-400 pt-2">
             ¿Ya tienes cuenta?{' '}

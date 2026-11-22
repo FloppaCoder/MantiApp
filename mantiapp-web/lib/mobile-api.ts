@@ -16,7 +16,7 @@ export async function technicianContext(request: Request) {
   });
   const { data, error } = await authClient.auth.getUser(token);
   if (error || !data.user) throw new MobileApiError('La sesión no es válida.', 401);
-  const account = await authClient.from('users').select('*').eq('id', data.user.id).single();
+  const account = await authClient.from('profiles').select('*').eq('id', data.user.id).single();
   if (account.error) throw new MobileApiError('No se pudieron verificar los permisos.', 403);
   if (account.data?.rol !== 'tecnico') throw new MobileApiError('Acceso exclusivo para técnicos.', 403);
   const db = createClient(url, key, {

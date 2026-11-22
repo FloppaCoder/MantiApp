@@ -67,6 +67,10 @@ export const priorities = ['Baja', 'Media', 'Alta', 'Crítica'] as const;
 export function relation<T>(value: Relation<T> | undefined): T | null {
     return Array.isArray(value) ? value[0] ?? null : value ?? null;
 }
+// Une nombre y apellido (profiles los guarda por separado) para mostrarlos en pantalla.
+export function nombreCompleto(persona: { nombre?: string | null; apellido?: string | null } | null | undefined) {
+    return [persona?.nombre, persona?.apellido].filter(Boolean).join(' ');
+}
 export function assetLabel(asset: Pick<Asset, 'nombre' | 'codigo'> | null | undefined, fallback = 'Activo no disponible') {
     if (!asset) return fallback;
     return [asset.nombre, asset.codigo].filter(Boolean).join(' · ') || fallback;

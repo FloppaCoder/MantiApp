@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
+import { nombreCompleto } from '@/lib/domain';
 
 // Method: GET /api/ordenes
 // Lista órdenes de trabajo (admite ?tecnico_id=... para móvil)
@@ -11,7 +12,7 @@ export async function GET(request: Request) {
 
     let query = supabase
       .from('work_orders')
-      .select('*, assets(id, codigo, nombre, ubicacion), profiles(id, nombre, email)')
+      .select('*, assets(id, codigo, nombre, ubicacion), profiles(id, nombre, apellido, email)')
       .order('created_at', { ascending: false });
 
     if (tecnicoId) query = query.eq('tecnico_id', tecnicoId);
@@ -19,7 +20,13 @@ export async function GET(request: Request) {
 
     const { data, error } = await query;
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json(data, { status: 200 });
+
+    // La pantalla muestra profiles.nombre, así que ahí va el nombre completo (nombre + apellido)
+    const ordenes = (data || []).map((orden) => {
+      const tecnico = Array.isArray(orden.profiles) ? orden.profiles[0] : orden.profiles;
+      return { ...orden, profiles: tecnico ? { ...tecnico, nombre: nombreCompleto(tecnico) } : null };
+    });
+    return NextResponse.json(ordenes, { status: 200 });
   } catch {
     return NextResponse.json({ error: 'Error al obtener órdenes' }, { status: 500 });
   }

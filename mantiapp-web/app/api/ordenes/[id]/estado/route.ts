@@ -28,7 +28,11 @@ export async function PATCH(
 
     const { data: ordenActualizada, error: updateErr } = await supabase
       .from('work_orders')
-      .update({ estado: nuevo_estado })
+      // Al completar se guarda la fecha; si la orden se reabre, se limpia
+      .update({
+        estado: nuevo_estado,
+        fecha_completada: nuevo_estado === 'Completada' ? new Date().toISOString() : null,
+      })
       .eq('id', id)
       .select('*, assets(*), profiles(*)')
       .single();
