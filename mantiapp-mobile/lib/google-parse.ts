@@ -11,6 +11,14 @@ export function paramsFromUrl(url: string) {
   return new URLSearchParams(`${query}&${hash}`);
 }
 
+// Supabase rechaza las direcciones de retorno con IP local (exp://192.168.x.x...), que es lo que
+// usa Expo Go en modo normal. En ese caso se usa el esquema propio de la app (mantiapp://).
+// Con el modo túnel (nombre de dominio, exp://algo.exp.direct) o con la app compilada, se usa la de Expo.
+export function direccionDeRetorno(urlExpo: string) {
+  const usaIpLocal = /^exp:\/\/\d{1,3}(\.\d{1,3}){3}(:\d+)?/.test(urlExpo);
+  return usaIpLocal ? 'mantiapp://auth-callback' : urlExpo;
+}
+
 // Google entrega el nombre en los datos del usuario. Si no vienen separados,
 // se parte el nombre completo: la primera palabra es el nombre y el resto el apellido.
 export function nombreDeGoogle(meta: Record<string, unknown> = {}) {
