@@ -12,7 +12,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       .select('estado, checklist').eq('id', id).eq('tecnico_id', user.id).maybeSingle();
     if (readError) throw readError;
     if (!order) throw new MobileApiError('Orden no encontrada.', 404);
-    const update = validateOrderUpdate(body, order);
+    const update = validateOrderUpdate(body, order, id);
     const { data, error } = await db.from('work_orders').update(update)
       .eq('id', id).eq('tecnico_id', user.id).eq('estado', order.estado)
       .select(orderSelection).maybeSingle();

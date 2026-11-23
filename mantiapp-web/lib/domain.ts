@@ -27,6 +27,8 @@ export interface WorkOrder {
     estado: string;
     fecha_vencimiento: string | null;
     instrucciones_seguridad?: string;
+    fotos?: string[];
+    observaciones?: string | null;
     assets: Relation<Pick<Asset, 'id' | 'codigo' | 'nombre' | 'ubicacion'>>;
     profiles: Relation<{
         id: string;

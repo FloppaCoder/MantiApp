@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import AuthLogo from '@/components/auth-logo';
+import { esTelefonoValido } from '@/lib/validation';
 
 // Pantalla para cuentas nuevas (por ejemplo, las que entran con Google) que todavía no tienen perfil.
 export default function CompletarPerfilPage() {
@@ -11,6 +12,8 @@ export default function CompletarPerfilPage() {
   const [email, setEmail] = useState('');
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [especialidad, setEspecialidad] = useState('');
   const [rol, setRol] = useState('tecnico');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -54,10 +57,23 @@ export default function CompletarPerfilPage() {
       return;
     }
 
+    if (!esTelefonoValido(telefono)) {
+      setError("Ingresa un teléfono válido (8 a 15 dígitos, ejemplo: 7000-0000).");
+      return;
+    }
+
     setLoading(true);
     const { error: dbError } = await supabase
       .from('profiles')
-      .insert([{ id: userId, email, nombre: nombre.trim(), apellido: apellido.trim(), rol }]);
+      .insert([{
+        id: userId,
+        email,
+        nombre: nombre.trim(),
+        apellido: apellido.trim(),
+        telefono: telefono.trim() || null,
+        especialidad: especialidad.trim() || null,
+        rol,
+      }]);
 
     if (dbError) {
       setError("No se pudo guardar el perfil: " + dbError.message);
@@ -132,6 +148,31 @@ export default function CompletarPerfilPage() {
               disabled
               className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-400 opacity-70"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1">Teléfono (opcional)</label>
+              <input
+                type="tel"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+                maxLength={20}
+                className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-500"
+                placeholder="7000-0000"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1">Especialidad (opcional)</label>
+              <input
+                type="text"
+                value={especialidad}
+                onChange={(e) => setEspecialidad(e.target.value)}
+                maxLength={80}
+                className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-500"
+                placeholder="Ej. Refrigeración"
+              />
+            </div>
           </div>
 
           <div>

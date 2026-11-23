@@ -22,9 +22,9 @@ export function OrderDetailPage(props: OrderReportProps) {
         {!complete && isActive(order) && !inProgress && <Button title="Iniciar trabajo" loading={saving} onPress={() => update('En progreso')} />}
         {(inProgress || complete) && <>
           <OrderChecklist tasks={draft.checklist} complete={complete} saving={saving} progress={progress} onToggle={toggleTask} />
-          <PhotoEvidence draft={draft} complete={complete} saving={saving} picking={picking} addPhoto={addPhoto} removePhoto={removePhoto} />
+          <PhotoEvidence draft={draft} savedPhotos={order.fotos} complete={complete} saving={saving} picking={picking} addPhoto={addPhoto} removePhoto={removePhoto} />
           <ReportObservations draft={draft} complete={complete} saving={saving} change={change} />
-          {!complete && <><Button title="Guardar avance" secondary disabled={picking} loading={saving} onPress={() => update('En progreso')} /><Button title="Marcar como completada" success loading={saving} disabled={!allChecked || picking} onPress={() => Alert.alert('Completar orden', '¿Confirmas que terminaste todas las tareas? Las fotos y observaciones permanecerán en este dispositivo.', [{ text: 'Cancelar', style: 'cancel' }, { text: 'Completar', onPress: () => update('Completada') }])} />{!allChecked && <Text style={[styles.small, { textAlign: 'center' }]}>Completa todas las tareas del checklist para finalizar.</Text>}</>}
+          {!complete && <><Button title="Guardar avance" secondary disabled={picking} loading={saving} onPress={() => update('En progreso')} /><Button title="Marcar como completada" success loading={saving} disabled={!allChecked || picking} onPress={() => Alert.alert('Completar orden', '¿Confirmas que terminaste todas las tareas? Las fotos y observaciones se enviarán con la orden.', [{ text: 'Cancelar', style: 'cancel' }, { text: 'Completar', onPress: () => update('Completada') }])} />{!allChecked && <Text style={[styles.small, { textAlign: 'center' }]}>Completa todas las tareas del checklist para finalizar.</Text>}</>}
         </>}
         {(error || localError) ? <View style={styles.error}><Text accessibilityRole="alert" style={styles.errorText}>{error || localError}</Text>{localError ? <Button secondary title="Reintentar guardar borrador" onPress={retryDraft} /> : null}</View> : null}
       </ScrollView>}

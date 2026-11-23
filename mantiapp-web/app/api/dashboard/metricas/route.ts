@@ -40,17 +40,6 @@ export async function GET() {
       });
     }
 
-    const graficoMensual = [
-      { mes: 'Ene', preventivos: 4, correctivos: 1 },
-      { mes: 'Feb', preventivos: 5, correctivos: 1 },
-      { mes: 'Mar', preventivos: 3, correctivos: 2 },
-      { mes: 'Abr', preventivos: 6, correctivos: 1 },
-      { mes: 'May', preventivos: 5, correctivos: 1 },
-      { mes: 'Jun', preventivos: 7, correctivos: 2 },
-      { mes: 'Jul', preventivos: 5, correctivos: 1 },
-      { mes: 'Ago', preventivos: 4, correctivos: 2 },
-    ];
-
     return NextResponse.json({
       kpis: {
         total_activos: totalActivos,
@@ -60,7 +49,6 @@ export async function GET() {
       },
       alertas,
       activos_atencion: activos.filter((a) => a.estado !== 'Operativo'),
-      grafico_mensual: graficoMensual,
     }, { status: 200 });
   } catch {
     return NextResponse.json({ error: 'Error al generar métricas' }, { status: 500 });

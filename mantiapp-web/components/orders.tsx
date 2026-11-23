@@ -91,5 +91,18 @@ function OrderDetail({ order, reload }: {
             setBusy(false);
         }
     }
-    return <><PageHeading title={order.titulo} subtitle={order.codigo_ot}><Badge value={order.estado}/><Badge value={order.prioridad}/></PageHeading><div className="detail-grid"><Panel title="Detalle del trabajo"><div className="panel-body"><h3>Descripción</h3><p className="preserve-lines">{order.descripcion || 'Sin descripción'}</p><h3>Instrucciones de seguridad</h3><p className="preserve-lines">{order.instrucciones_seguridad || 'Sin instrucciones registradas.'}</p><dl className="data-list"><div><dt>Activo</dt><dd>{asset ? <Link href={`/admin/activos/${encodeURIComponent(asset.id)}`}>{asset.codigo} · {asset.nombre}</Link> : 'No disponible'}</dd></div><div><dt>Técnico</dt><dd>{tech?.nombre ?? 'Sin asignar'}</dd></div><div><dt>Vencimiento</dt><dd>{dateLabel(order.fecha_vencimiento)}</dd></div></dl></div></Panel><Panel title="Actualizar estado"><form onSubmit={update} className="panel-body form-stack"><Field label="Estado de la orden"><select value={state} onChange={event => setState(event.target.value)} disabled={busy}>{!(orderStates as readonly string[]).includes(order.estado) && <option value={order.estado} disabled>{order.estado}</option>}{orderStates.map(item => <option key={item}>{item}</option>)}</select></Field><p className="muted">Al completar la orden, el activo vuelve a estado operativo. Asignarla o iniciarla lo coloca en mantenimiento.</p>{error && <Notice danger>{error}</Notice>}<button className="button" disabled={busy || state === order.estado}>{busy ? 'Guardando…' : 'Guardar estado'}</button></form></Panel></div></>;
+    return <><PageHeading title={order.titulo} subtitle={order.codigo_ot}><Badge value={order.estado}/><Badge value={order.prioridad}/></PageHeading><div className="detail-grid"><Panel title="Detalle del trabajo"><div className="panel-body"><h3>Descripción</h3><p className="preserve-lines">{order.descripcion || 'Sin descripción'}</p><h3>Instrucciones de seguridad</h3><p className="preserve-lines">{order.instrucciones_seguridad || 'Sin instrucciones registradas.'}</p><dl className="data-list"><div><dt>Activo</dt><dd>{asset ? <Link href={`/admin/activos/${encodeURIComponent(asset.id)}`}>{asset.codigo} · {asset.nombre}</Link> : 'No disponible'}</dd></div><div><dt>Técnico</dt><dd>{tech?.nombre ?? 'Sin asignar'}</dd></div><div><dt>Vencimiento</dt><dd>{dateLabel(order.fecha_vencimiento)}</dd></div></dl>{order.observaciones ? <>
+            <h3>Observaciones del técnico</h3>
+            <p className="preserve-lines">{order.observaciones}</p>
+          </> : null}{order.fotos?.length ? <>
+            <h3>Evidencia fotográfica</h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+              {order.fotos.map((url, i) => (
+                <a key={url} href={url} target="_blank" rel="noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={`Evidencia ${i + 1}`} style={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 8 }} />
+                </a>
+              ))}
+            </div>
+          </> : null}</div></Panel><Panel title="Actualizar estado"><form onSubmit={update} className="panel-body form-stack"><Field label="Estado de la orden"><select value={state} onChange={event => setState(event.target.value)} disabled={busy}>{!(orderStates as readonly string[]).includes(order.estado) && <option value={order.estado} disabled>{order.estado}</option>}{orderStates.map(item => <option key={item}>{item}</option>)}</select></Field><p className="muted">Al completar la orden, el activo vuelve a estado operativo. Asignarla o iniciarla lo coloca en mantenimiento.</p>{error && <Notice danger>{error}</Notice>}<button className="button" disabled={busy || state === order.estado}>{busy ? 'Guardando…' : 'Guardar estado'}</button></form></Panel></div></>;
 }

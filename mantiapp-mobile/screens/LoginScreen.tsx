@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Brand from "../components/Brand";
 import GoogleButton from "../components/google-button";
+import { esCorreoValido } from "../lib/validation";
 import { supabase } from "../lib/supabaseClient";
 
 interface LoginProps {
@@ -48,6 +49,11 @@ export default function LoginScreen({
 
     if (!email.trim() || !password.trim()) {
       setError("Por favor completa todos los campos.");
+      return;
+    }
+
+    if (!esCorreoValido(email)) {
+      setError("Ingresa un correo electrónico válido (ejemplo: nombre@empresa.com).");
       return;
     }
 
