@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabaseClient';
 import GoogleButton from '@/components/google-button';
+import { esTelefonoValido } from '@/lib/validation';
 import AuthLogo from '@/components/auth-logo';
 
 export default function RegisterPage() {
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
   const [email, setEmail] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [especialidad, setEspecialidad] = useState('');
   const [password, setPassword] = useState('');
   const [rol, setRol] = useState('tecnico');
   const [error, setError] = useState<string | null>(null);
@@ -19,8 +22,15 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
+    // Se valida antes de crear la cuenta, para no dejar una cuenta sin perfil
+    if (!esTelefonoValido(telefono)) {
+      setError("Ingresa un teléfono válido (8 a 15 dígitos, ejemplo: 7000-0000).");
+      return;
+    }
+
+    setLoading(true);
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
@@ -41,6 +51,8 @@ export default function RegisterPage() {
           email: email,
           nombre: nombre,
           apellido: apellido,
+          telefono: telefono.trim() || null,
+          especialidad: especialidad.trim() || null,
           rol: rol
         }
       ]);
@@ -106,6 +118,31 @@ export default function RegisterPage() {
               className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-500"
               placeholder="juan@empresa.com"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1">Teléfono (opcional)</label>
+              <input
+                type="tel"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+                maxLength={20}
+                className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-500"
+                placeholder="7000-0000"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-1">Especialidad (opcional)</label>
+              <input
+                type="text"
+                value={especialidad}
+                onChange={(e) => setEspecialidad(e.target.value)}
+                maxLength={80}
+                className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-white placeholder-slate-500"
+                placeholder="Ej. Refrigeración"
+              />
+            </div>
           </div>
 
           <div>

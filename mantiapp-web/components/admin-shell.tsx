@@ -9,7 +9,6 @@ const sections = [
     ['Mantenimientos', '/admin/mantenimientos', 'calendar'], ['Órdenes de trabajo', '/admin/ordenes', 'orders'],
     ['Técnicos', '/admin/tecnicos', 'users'], ['Historial', '/admin/historial', 'history'],
     ['Reportes', '/admin/reportes', 'chart'], ['Alertas', '/admin/alertas', 'bell'],
-    ['Configuración', '/admin/configuracion', 'settings'],
 ];
 export default function AdminShell({ children }: {
     children: ReactNode;

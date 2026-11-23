@@ -24,7 +24,7 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": false,
+          "cameraPermission": "Permite a MantiApp tomar fotos como evidencia de mantenimiento.",
           "photosPermission": "Permite a MantiApp seleccionar fotos como evidencia de mantenimiento.",
           "microphonePermission": false
         }

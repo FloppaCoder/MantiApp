@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Brand from "../components/Brand";
 import GoogleButton from "../components/google-button";
+import { esCorreoValido, esTelefonoValido, limiteEspecialidad } from "../lib/validation";
 import { supabase } from "../lib/supabaseClient";
 
 interface RegisterProps {
@@ -23,6 +24,8 @@ export default function RegisterScreen({ onNavigateToLogin }: RegisterProps) {
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [email, setEmail] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [especialidad, setEspecialidad] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,6 +42,16 @@ export default function RegisterScreen({ onNavigateToLogin }: RegisterProps) {
       !confirmPassword.trim()
     ) {
       setError("Por favor completa todos los campos.");
+      return;
+    }
+
+    if (!esCorreoValido(email)) {
+      setError("Ingresa un correo electrónico válido (ejemplo: nombre@empresa.com).");
+      return;
+    }
+
+    if (!esTelefonoValido(telefono)) {
+      setError("Ingresa un teléfono válido (8 a 15 dígitos, ejemplo: 7000-0000).");
       return;
     }
 
@@ -75,6 +88,8 @@ export default function RegisterScreen({ onNavigateToLogin }: RegisterProps) {
         nombre: nombre.trim(),
         apellido: apellido.trim(),
         email: email.trim(),
+        telefono: telefono.trim() || null,
+        especialidad: especialidad.trim() || null,
         rol: "tecnico",
       });
 
@@ -142,6 +157,31 @@ export default function RegisterScreen({ onNavigateToLogin }: RegisterProps) {
                   placeholderTextColor="#94a3b8"
                   autoCapitalize="none"
                   autoCorrect={false}
+                />
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <Text style={styles.formLabel}>Teléfono (opcional)</Text>
+                <TextInput
+                  value={telefono}
+                  onChangeText={setTelefono}
+                  style={styles.input}
+                  placeholder="7000-0000"
+                  placeholderTextColor="#94a3b8"
+                  keyboardType="phone-pad"
+                  maxLength={20}
+                />
+              </View>
+
+              <View style={styles.fieldGroup}>
+                <Text style={styles.formLabel}>Especialidad (opcional)</Text>
+                <TextInput
+                  value={especialidad}
+                  onChangeText={setEspecialidad}
+                  style={styles.input}
+                  placeholder="Ej. Refrigeración"
+                  placeholderTextColor="#94a3b8"
+                  maxLength={limiteEspecialidad}
                 />
               </View>
 
